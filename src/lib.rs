@@ -1,3 +1,8 @@
+use std::path::Path;
+
+use serde::Deserialize;
+use serde_bytes::ByteBuf;
+
 pub fn decode_bencoded_value(encoded_value: &str) -> (serde_json::Value, &str) {
     match encoded_value.chars().next().unwrap() {
         '0'..='9' => encoded_value
@@ -82,4 +87,38 @@ fn test_bencode() {
         (serde_json::Value::Number((-52).into()), "eabc"),
         decode_bencoded_value(input)
     );
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct Torrent {
+    pub announce: String,
+    pub info: Info,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct Info {
+    pub name: String,
+    #[serde(rename = "piece length")]
+    pub p_len: usize,
+    pub pieces: ByteBuf,
+    #[serde(flatten)]
+    pub keys: Keys,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum Keys {
+    SingleFile { length: usize },
+    MultiFile { files: Vec<File> },
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct File {
+    pub length: u64,
+    pub path: Vec<String>,
+}
+
+pub fn parse_torrent_file<P: AsRef<Path>>(path: P) -> Torrent {
+    let b = std::fs::read(path).unwrap();
+    serde_bencode::de::from_bytes(&b).unwrap()
 }
