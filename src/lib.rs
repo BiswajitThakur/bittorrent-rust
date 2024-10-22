@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
 pub fn decode_bencoded_value(encoded_value: &str) -> (serde_json::Value, &str) {
@@ -89,13 +89,13 @@ fn test_bencode() {
     );
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Torrent {
     pub announce: String,
     pub info: Info,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Info {
     pub name: String,
     #[serde(rename = "piece length")]
@@ -105,14 +105,14 @@ pub struct Info {
     pub keys: Keys,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Keys {
     SingleFile { length: usize },
     MultiFile { files: Vec<File> },
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct File {
     pub length: u64,
     pub path: Vec<String>,
