@@ -37,6 +37,11 @@ fn main() {
             hasher.update(&info);
             let info_hash = hasher.finalize();
             println!("Info Hash: {}", hex::encode(&info_hash));
+            println!("Piece Length: {}", t.info.p_len);
+            println!("Piece Hashes:");
+            for hash in t.info.pieces.0 {
+                println!("{}", hex::encode(&hash));
+            }
         }
     }
 }

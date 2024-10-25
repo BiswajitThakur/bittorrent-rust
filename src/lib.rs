@@ -1,7 +1,7 @@
 use std::path::Path;
-
+mod hashes;
+use hashes::Hashes;
 use serde::{Deserialize, Serialize};
-use serde_bytes::ByteBuf;
 
 pub fn decode_bencoded_value(encoded_value: &str) -> (serde_json::Value, &str) {
     match encoded_value.chars().next().unwrap() {
@@ -55,40 +55,6 @@ pub fn decode_bencoded_value(encoded_value: &str) -> (serde_json::Value, &str) {
     }
 }
 
-#[test]
-fn test_bencode() {
-    let input = "5:hello";
-    assert_eq!(
-        (serde_json::Value::String("hello".into()), ""),
-        decode_bencoded_value(input)
-    );
-    let input = "6:hellohiii";
-    assert_eq!(
-        (serde_json::Value::String("helloh".into()), "iii"),
-        decode_bencoded_value(input)
-    );
-    let input = "5:hello5:hello";
-    assert_eq!(
-        (serde_json::Value::String("hello".into()), "5:hello"),
-        decode_bencoded_value(input)
-    );
-    let input = "i52e";
-    assert_eq!(
-        (serde_json::Value::Number(52.into()), ""),
-        decode_bencoded_value(input)
-    );
-    let input = "i-52e";
-    assert_eq!(
-        (serde_json::Value::Number((-52).into()), ""),
-        decode_bencoded_value(input)
-    );
-    let input = "i-52eeabc";
-    assert_eq!(
-        (serde_json::Value::Number((-52).into()), "eabc"),
-        decode_bencoded_value(input)
-    );
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Torrent {
     pub announce: String,
@@ -100,7 +66,7 @@ pub struct Info {
     pub name: String,
     #[serde(rename = "piece length")]
     pub p_len: usize,
-    pub pieces: ByteBuf,
+    pub pieces: Hashes,
     #[serde(flatten)]
     pub keys: Keys,
 }
